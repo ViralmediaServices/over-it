@@ -20,7 +20,8 @@
       "permissions": [
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE"
-      ]
+      ],
+      "softwareKeyboardLayoutMode": "pan"
     },
     "owner": "viralmediaservices"
   }

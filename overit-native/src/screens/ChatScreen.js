@@ -8,7 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { t } from '../constants/theme';
 import Avatar from '../components/Avatar';
 import { SYSTEM_PROMPT } from '../utils/prompts';
-import { sendChat, saveMessages, getMessages, saveProfile, extractProfile, clearMessages } from '../utils/api';
+import { sendChat, saveMessages, getMessages, getProfile, saveProfile, extractProfile, clearMessages } from '../utils/api';
 
 const Dots = () => {
   const anims = [
@@ -105,8 +105,19 @@ export default function ChatScreen({ initProfile, firstMsg }) {
   useEffect(() => {
     (async () => {
       try {
-        const { messages: saved } = await getMessages();
-        if (saved?.length) { setMessages(saved); return; }
+        const [msgRes, profRes] = await Promise.allSettled([
+          getMessages(),
+          getProfile(),
+        ]);
+        if (profRes.status === 'fulfilled' && profRes.value?.profile) {
+          const merged = { ...initProfile, ...profRes.value.profile };
+          setProfile(merged);
+          profileRef.current = merged;
+        }
+        if (msgRes.status === 'fulfilled' && msgRes.value?.messages?.length) {
+          setMessages(msgRes.value.messages);
+          return;
+        }
       } catch {}
       setMessages([{ role: 'assistant', content: firstMsg || "Hey. I'm here. 💙", id: 'welcome' }]);
     })();
@@ -116,7 +127,7 @@ export default function ChatScreen({ initProfile, firstMsg }) {
     if (messages.length > 0) {
       setTimeout(() => flatRef.current?.scrollToEnd({ animated: true }), 100);
     }
-  }, [messages, isLoading]);
+  }, [messages.length, isLoading]);
 
   const send = async () => {
     if (!input.trim() || isLoading) return;

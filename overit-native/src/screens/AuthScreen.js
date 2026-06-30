@@ -2,6 +2,7 @@ import React, { useState, useCallback, useRef } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, ScrollView, ActivityIndicator,
+  KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -116,6 +117,7 @@ export default function AuthScreen({ onDone }) {
         </TouchableOpacity>
         <Text style={styles.legal}>🔒 Your conversations are private and never shared.</Text>
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
