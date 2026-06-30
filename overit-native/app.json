@@ -6,7 +6,10 @@
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "extra": {
-      "apiUrl": "https://overit-api.vercel.app"
+      "apiUrl": "https://overit-api.vercel.app",
+      "eas": {
+        "projectId": "0bb3f1ad-6ac2-4c89-9a99-59272bbbad15"
+      }
     },
     "ios": {
       "supportsTablet": false,
@@ -14,7 +17,11 @@
     },
     "android": {
       "package": "com.overitapp.overit",
-      "permissions": ["RECEIVE_BOOT_COMPLETED", "VIBRATE"]
-    }
+      "permissions": [
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE"
+      ]
+    },
+    "owner": "viralmediaservices"
   }
 }
