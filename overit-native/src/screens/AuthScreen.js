@@ -79,44 +79,56 @@ export default function AuthScreen({ onDone }) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-        <View style={styles.logo}>
-          <Avatar size={52} />
-          <Text style={styles.logoText}>Over It</Text>
-        </View>
-        <View style={styles.heading}>
-          <Text style={styles.h1}>{mode === 'signup' ? 'Begin your healing' : 'Welcome back'}</Text>
-          <Text style={styles.sub}>{mode === 'signup' ? 'A private, judgment-free space to heal.' : 'Continue where you left off.'}</Text>
-        </View>
-        <TouchableOpacity style={styles.ghostBtn}>
-          <Text style={styles.ghostBtnText}>🍎  Continue with Apple</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.ghostBtn, { marginTop: 8 }]}>
-          <Text style={[styles.ghostBtnText, { fontWeight: '700' }]}>G  Continue with Google</Text>
-        </TouchableOpacity>
-        <View style={styles.divider}>
-          <View style={styles.dividerLine}/>
-          <Text style={styles.dividerText}>or</Text>
-          <View style={styles.dividerLine}/>
-        </View>
-        {mode === 'signup' && <Field label="First Name" onChangeText={handleName} placeholder="Your name" onSubmit={submit}/>}
-        <Field label="Email" onChangeText={handleEmail} placeholder="you@email.com" keyboardType="email-address" onSubmit={submit}/>
-        <Field label="Password" onChangeText={handlePassword} placeholder="8+ characters" secureTextEntry onSubmit={submit}/>
-        {error ? <Text style={styles.error}>{error}</Text> : null}
-        <TouchableOpacity onPress={submit} disabled={loading} style={styles.submitWrap} activeOpacity={0.8}>
-          <LinearGradient
-            colors={loading ? ['rgba(124,58,237,0.12)', 'rgba(124,58,237,0.12)'] : ['#7c3aed', '#be185d']}
-            start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-            style={styles.submitBtn}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          contentContainerStyle={styles.container}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          keyboardDismissMode="on-drag"
+        >
+          <View style={styles.logo}>
+            <Avatar size={52} />
+            <Text style={styles.logoText}>Over It</Text>
+          </View>
+          <View style={styles.heading}>
+            <Text style={styles.h1}>{mode === 'signup' ? 'Begin your healing' : 'Welcome back'}</Text>
+            <Text style={styles.sub}>{mode === 'signup' ? 'A private, judgment-free space to heal.' : 'Continue where you left off.'}</Text>
+          </View>
+          <TouchableOpacity style={styles.ghostBtn}>
+            <Text style={styles.ghostBtnText}>🍎  Continue with Apple</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.ghostBtn, { marginTop: 8 }]}>
+            <Text style={[styles.ghostBtnText, { fontWeight: '700' }]}>G  Continue with Google</Text>
+          </TouchableOpacity>
+          <View style={styles.divider}>
+            <View style={styles.dividerLine}/>
+            <Text style={styles.dividerText}>or</Text>
+            <View style={styles.dividerLine}/>
+          </View>
+          {mode === 'signup' && <Field label="First Name" onChangeText={handleName} placeholder="Your name" onSubmit={submit}/>}
+          <Field label="Email" onChangeText={handleEmail} placeholder="you@email.com" keyboardType="email-address" onSubmit={submit}/>
+          <Field label="Password" onChangeText={handlePassword} placeholder="8+ characters" secureTextEntry onSubmit={submit}/>
+          {error ? <Text style={styles.error}>{error}</Text> : null}
+          <TouchableOpacity onPress={submit} disabled={loading} style={styles.submitWrap} activeOpacity={0.8}>
+            <LinearGradient
+              colors={loading ? ['rgba(124,58,237,0.12)', 'rgba(124,58,237,0.12)'] : ['#7c3aed', '#be185d']}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+              style={styles.submitBtn}
+            >
+              {loading ? <ActivityIndicator color={t.mutedLt}/> : <Text style={styles.submitText}>{mode === 'signup' ? 'Create my account' : 'Sign in'}</Text>}
+            </LinearGradient>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => { nameRef.current=''; emailRef.current=''; passwordRef.current=''; setError(''); setMode(m => m === 'signup' ? 'signin' : 'signup'); }}
+            style={styles.toggle}
           >
-            {loading ? <ActivityIndicator color={t.mutedLt}/> : <Text style={styles.submitText}>{mode === 'signup' ? 'Create my account' : 'Sign in'}</Text>}
-          </LinearGradient>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => { nameRef.current=''; emailRef.current=''; passwordRef.current=''; setError(''); setMode(m => m === 'signup' ? 'signin' : 'signup'); }} style={styles.toggle}>
-          <Text style={styles.toggleText}>{mode === 'signup' ? 'Already have an account? Sign in' : 'New here? Create an account'}</Text>
-        </TouchableOpacity>
-        <Text style={styles.legal}>🔒 Your conversations are private and never shared.</Text>
-      </ScrollView>
+            <Text style={styles.toggleText}>{mode === 'signup' ? 'Already have an account? Sign in' : 'New here? Create an account'}</Text>
+          </TouchableOpacity>
+          <Text style={styles.legal}>🔒 Your conversations are private and never shared.</Text>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
