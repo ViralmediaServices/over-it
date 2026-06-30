@@ -1,4 +1,4 @@
-const { requireAuth, handleOptions } = require('./_auth');
+const { requireAuth, handleOptions, setCors } = require('./_auth');
 
 const ANTHROPIC = 'https://api.anthropic.com/v1/messages';
 
@@ -20,6 +20,7 @@ Schema:
 Conversation:`;
 
 module.exports = async function handler(req, res) {
+  setCors(res);
   if (req.method === 'OPTIONS') return handleOptions(res);
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 

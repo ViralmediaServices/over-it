@@ -1,7 +1,8 @@
 const { getRedis }              = require('./_redis');
-const { requireAuth, handleOptions } = require('./_auth');
+const { requireAuth, handleOptions, setCors } = require('./_auth');
 
 module.exports = async function handler(req, res) {
+  setCors(res);
   if (req.method === 'OPTIONS') return handleOptions(res);
 
   let user;

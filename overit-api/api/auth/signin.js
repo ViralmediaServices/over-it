@@ -1,9 +1,10 @@
 const bcrypt = require('bcryptjs');
 const jwt    = require('jsonwebtoken');
-const { getRedis }      = require('../_redis');
-const { handleOptions } = require('../_auth');
+const { getRedis }              = require('../_redis');
+const { handleOptions, setCors } = require('../_auth');
 
 module.exports = async function handler(req, res) {
+  setCors(res);
   if (req.method === 'OPTIONS') return handleOptions(res);
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 

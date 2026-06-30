@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "Over It",
+    "slug": "over-it",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "extra": {
+      "apiUrl": "https://overit-api.vercel.app"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.overitapp.overit"
+    },
+    "android": {
+      "package": "com.overitapp.overit",
+      "permissions": ["RECEIVE_BOOT_COMPLETED", "VIBRATE"]
+    }
+  }
+}

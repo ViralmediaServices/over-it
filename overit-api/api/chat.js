@@ -1,3 +1,5 @@
+import { jwtVerify } from 'jose';
+
 export const config = { runtime: 'edge' };
 
 const ANTHROPIC      = 'https://api.anthropic.com/v1/messages';
@@ -9,8 +11,7 @@ async function verifyJWT(authHeader) {
   if (!authHeader?.startsWith('Bearer ')) throw new Error('No token');
   const token  = authHeader.slice(7);
   const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-  const { jwtVerify } = await import('https://esm.sh/jose@5?bundle');
-  const { payload }   = await jwtVerify(token, secret);
+  const { payload } = await jwtVerify(token, secret);
   return payload;
 }
 
@@ -32,8 +33,8 @@ export default async function handler(req) {
 
   try {
     await verifyJWT(req.headers.get('authorization'));
-  } catch {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+  } catch (err) {
+    return new Response(JSON.stringify({ error: 'Unauthorized', detail: err.message }), { status: 401 });
   }
 
   const { messages, systemPrompt } = await req.json();
