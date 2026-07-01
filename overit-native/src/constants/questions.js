@@ -36,7 +36,7 @@ export const QUESTIONS = [
     key: 'currentFeelings', required: true, multi: true,
   },
   {
-    id: 'attachment1', type: 'chips', multi: true, maxSelect: 2,
+    id: 'attachment1', type: 'cards', multi: true, maxSelect: 2,
     eyebrow: 'Understanding you better.',
     question: 'In relationships, which feels most true for you?',
     subtitle: 'Pick up to 2 that resonate',
@@ -49,7 +49,7 @@ export const QUESTIONS = [
     key: 'attachmentQ1', required: false,
   },
   {
-    id: 'attachment2', type: 'chips', multi: true, maxSelect: 2,
+    id: 'attachment2', type: 'cards', multi: true, maxSelect: 2,
     eyebrow: 'Still with you.',
     question: 'Since the breakup, what is your biggest fear?',
     subtitle: 'Pick up to 2 that feel true',
@@ -62,7 +62,7 @@ export const QUESTIONS = [
     key: 'attachmentQ2', required: false,
   },
   {
-    id: 'attachment3', type: 'chips', multi: true, maxSelect: 2,
+    id: 'attachment3', type: 'cards', multi: true, maxSelect: 2,
     eyebrow: 'Almost there.',
     question: 'When things got difficult between you, what did you tend to do?',
     subtitle: 'Pick up to 2 that sound like you',

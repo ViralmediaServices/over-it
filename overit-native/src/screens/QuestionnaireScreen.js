@@ -102,7 +102,7 @@ export default function QuestionnaireScreen({ userName, onDone }) {
           />
         )}
 
-        {q.type === 'cards' && (
+        {q.type === 'cards' && !q.multi && (
           <View style={styles.cards}>
             {q.options.map(opt => {
               const sel = val === opt;
@@ -112,6 +112,37 @@ export default function QuestionnaireScreen({ userName, onDone }) {
                     {sel && <Text style={styles.check}>✓</Text>}
                   </View>
                   <Text style={[styles.cardText, sel && styles.cardTextSel]}>{opt}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
+
+        {q.type === 'cards' && q.multi && (
+          <View style={styles.cards}>
+            {q.options.map(opt => {
+              const cur = answers[q.key] || [];
+              const sel = cur.includes(opt);
+              const max = q.maxSelect || Infinity;
+              const disabled = !sel && cur.length >= max;
+              return (
+                <TouchableOpacity
+                  key={opt}
+                  onPress={() => {
+                    if (disabled) return;
+                    const cur2 = answers[q.key] || [];
+                    if (cur2.includes(opt)) {
+                      setA(cur2.filter(x => x !== opt));
+                    } else {
+                      setA([...cur2, opt]);
+                    }
+                  }}
+                  style={[styles.card, sel && styles.cardSel, disabled && styles.cardDisabled]}
+                >
+                  <View style={[styles.radio, sel && styles.radioSel]}>
+                    {sel && <Text style={styles.check}>✓</Text>}
+                  </View>
+                  <Text style={[styles.cardText, sel && styles.cardTextSel, disabled && styles.cardTextDisabled]}>{opt}</Text>
                 </TouchableOpacity>
               );
             })}
@@ -198,10 +229,12 @@ const styles = StyleSheet.create({
   radio:       { width: 18, height: 18, borderRadius: 9, borderWidth: 2, borderColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center' },
   radioSel:    { borderColor: '#7c3aed', backgroundColor: '#7c3aed' },
   check:       { color: '#fff', fontSize: 9, fontWeight: '700' },
-  cardText:    { fontSize: 14, color: t.textDim, flex: 1 },
-  cardTextSel: { fontSize: 14, color: '#c4b5fd', fontWeight: '600' },
+  cardText:        { fontSize: 14, color: t.textDim, flex: 1 },
+  cardTextSel:     { fontSize: 14, color: '#c4b5fd', fontWeight: '600' },
+  cardDisabled:    { opacity: 0.35 },
+  cardTextDisabled:{ color: t.muted },
   chips:           { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip:            { paddingVertical: 10, paddingHorizontal: 16, borderRadius: 50, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', backgroundColor: 'rgba(22,18,42,0.5)' },
+  chip:            { paddingVertical: 10, paddingHorizontal: 16, borderRadius: 50, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', backgroundColor: '#16122a' },
   chipSel:         { borderColor: 'rgba(124,58,237,0.6)', backgroundColor: 'rgba(124,58,237,0.17)' },
   chipDisabled:    { opacity: 0.35 },
   chipText:        { fontSize: 13, color: t.textDim, flexWrap: 'wrap' },
