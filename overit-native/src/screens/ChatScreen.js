@@ -347,7 +347,7 @@ export default function ChatScreen({ initProfile, firstMsg }) {
             </TouchableOpacity>
           </View>
           <Text style={styles.legal}>
-            Not a substitute for professional mental health care.{' '}
+            You're chatting with an AI, not a human. Not a substitute for professional mental health care.{' '}
             <Text style={{ color: '#5a3f82' }}>In crisis? Call or text 988.</Text>
           </Text>
         </View>

@@ -127,7 +127,7 @@ export default function AuthScreen({ onDone }) {
           >
             <Text style={styles.toggleText}>{mode === 'signup' ? 'Already have an account? Sign in' : 'New here? Create an account'}</Text>
           </TouchableOpacity>
-          <Text style={styles.legal}>🔒 Your conversations are private and never shared.</Text>
+          <Text style={styles.legal}>🔒 Your conversations are private and never shared.{'\n'}Over It is an AI companion, not a human or licensed therapist.</Text>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
