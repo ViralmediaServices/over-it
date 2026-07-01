@@ -256,29 +256,28 @@ export default function ChatScreen({ initProfile, firstMsg }) {
         </View>
       </View>
 
-      {showJourney && (
-        <View style={styles.journey}>
-          <Text style={styles.journeyTitle}>🌱 Your Journey</Text>
-          {!hasProfile ? (
-            <Text style={styles.journeyEmpty}>
-              As we talk, I will quietly build a picture of where you are so I can support you better over time.
-            </Text>
-          ) : (
-            <View style={styles.journeyGrid}>
-              {JOURNEY_ROWS.map(([icon, label, key]) => profile[key] ? (
-                <View key={key} style={styles.journeyCard}>
-                  <Text style={styles.journeyCardLabel}>{icon} {label}</Text>
-                  <Text style={styles.journeyCardVal}>
-                    {Array.isArray(profile[key]) ? profile[key].join(' · ') : profile[key]}
-                  </Text>
-                </View>
-              ) : null)}
-            </View>
-          )}
-        </View>
-      )}
-
       <FlatList
+        ListHeaderComponent={showJourney ? (
+          <View style={styles.journey}>
+            <Text style={styles.journeyTitle}>🌱 Your Journey</Text>
+            {!hasProfile ? (
+              <Text style={styles.journeyEmpty}>
+                As we talk, I will quietly build a picture of where you are so I can support you better over time.
+              </Text>
+            ) : (
+              <View style={styles.journeyGrid}>
+                {JOURNEY_ROWS.map(([icon, label, key]) => profile[key] ? (
+                  <View key={key} style={styles.journeyCard}>
+                    <Text style={styles.journeyCardLabel}>{icon} {label}</Text>
+                    <Text style={styles.journeyCardVal}>
+                      {Array.isArray(profile[key]) ? profile[key].join(' · ') : profile[key]}
+                    </Text>
+                  </View>
+                ) : null)}
+              </View>
+            )}
+          </View>
+        ) : null}
         ref={flatRef}
         data={messages}
         renderItem={renderMessage}
