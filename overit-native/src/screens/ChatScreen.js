@@ -257,27 +257,6 @@ export default function ChatScreen({ initProfile, firstMsg }) {
       </View>
 
       <FlatList
-        ListHeaderComponent={showJourney ? (
-          <View style={styles.journey}>
-            <Text style={styles.journeyTitle}>🌱 Your Journey</Text>
-            {!hasProfile ? (
-              <Text style={styles.journeyEmpty}>
-                As we talk, I will quietly build a picture of where you are so I can support you better over time.
-              </Text>
-            ) : (
-              <View style={styles.journeyGrid}>
-                {JOURNEY_ROWS.map(([icon, label, key]) => profile[key] ? (
-                  <View key={key} style={styles.journeyCard}>
-                    <Text style={styles.journeyCardLabel}>{icon} {label}</Text>
-                    <Text style={styles.journeyCardVal}>
-                      {Array.isArray(profile[key]) ? profile[key].join(' · ') : profile[key]}
-                    </Text>
-                  </View>
-                ) : null)}
-              </View>
-            )}
-          </View>
-        ) : null}
         ref={flatRef}
         data={messages}
         renderItem={renderMessage}
@@ -295,6 +274,40 @@ export default function ChatScreen({ initProfile, firstMsg }) {
           ) : null
         }
       />
+
+      {/* Journey overlay */}
+      {showJourney && (
+        <TouchableOpacity
+          style={styles.journeyOverlayBg}
+          activeOpacity={1}
+          onPress={() => setShowJourney(false)}
+        >
+          <TouchableOpacity activeOpacity={1} style={styles.journeyOverlay}>
+            <View style={styles.journeyOverlayHeader}>
+              <Text style={styles.journeyTitle}>🌱 Your Journey</Text>
+              <TouchableOpacity onPress={() => setShowJourney(false)} style={styles.journeyClose}>
+                <Text style={styles.journeyCloseText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            {!hasProfile ? (
+              <Text style={styles.journeyEmpty}>
+                As we talk, I will quietly build a picture of where you are so I can support you better over time.
+              </Text>
+            ) : (
+              <View style={styles.journeyGrid}>
+                {JOURNEY_ROWS.map(([icon, label, key]) => profile[key] ? (
+                  <View key={key} style={styles.journeyCard}>
+                    <Text style={styles.journeyCardLabel}>{icon} {label}</Text>
+                    <Text style={styles.journeyCardVal}>
+                      {Array.isArray(profile[key]) ? profile[key].join(' · ') : profile[key]}
+                    </Text>
+                  </View>
+                ) : null)}
+              </View>
+            )}
+          </TouchableOpacity>
+        </TouchableOpacity>
+      )}
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -361,7 +374,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)',
     padding: 14, maxHeight: '36%',
   },
-  journeyTitle: { fontSize: 11, fontWeight: '600', color: '#c4b5fd', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 10 },
+  journeyOverlayBg: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#0b0914', zIndex: 50 },
+  journeyOverlay: { position: 'absolute', top: 60, left: 12, right: 12, backgroundColor: '#0f0b1c', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(124,58,237,0.25)', padding: 16, maxHeight: '80%' },
+  journeyOverlayHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  journeyClose: { padding: 4 },
+  journeyCloseText: { color: t.muted, fontSize: 16 },
+  journeyTitle: { fontSize: 11, fontWeight: '600', color: '#c4b5fd', letterSpacing: 0.8, textTransform: 'uppercase' },
   journeyEmpty: { fontSize: 12.5, color: t.muted, lineHeight: 20, fontStyle: 'italic' },
   journeyGrid:  { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   journeyCard:  { backgroundColor: 'rgba(124,58,237,0.06)', borderWidth: 1, borderColor: 'rgba(124,58,237,0.12)', borderRadius: 8, padding: 8, minWidth: 155 },
