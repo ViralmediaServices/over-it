@@ -28,12 +28,12 @@ export const QUESTIONS = [
     key: 'breakupInitiator', required: true,
   },
   {
-    id: 'feelings', type: 'chips',
+    id: 'feelings', type: 'cards', multi: true,
     eyebrow: 'All of it is valid.',
     question: 'How are you feeling right now?',
     subtitle: 'Select everything that feels true',
     options: ['Heartbroken', 'Angry', 'Numb', 'Confused', 'Lost', 'Anxious', 'Relieved', 'Hopeful', 'Empty', 'Overwhelmed'],
-    key: 'currentFeelings', required: true, multi: true,
+    key: 'currentFeelings', required: true,
   },
   {
     id: 'attachment1', type: 'cards', multi: true, maxSelect: 2,
