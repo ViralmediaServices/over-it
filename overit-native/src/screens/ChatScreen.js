@@ -146,10 +146,21 @@ export default function ChatScreen({ initProfile, firstMsg }) {
       setIsLoading(false);
       revealMsg(text, am.id);
       const finalWithContent = final.map(m => m.id === am.id ? { ...m, content: text } : m);
-      setTimeout(() => {
-        saveMessages(finalWithContent).catch(() => {});
-        runExtraction(finalWithContent);
-      }, text.split(' ').length * 25 + 100);
+      saveMessages(finalWithContent).catch(() => {});
+      const uc = finalWithContent.filter(m => m.role === 'user').length;
+      if (uc > 0 && uc % 3 === 0) {
+        const excerpt = finalWithContent.slice(-14)
+          .map(m => `${m.role === 'user' ? 'User' : 'Over It'}: ${m.content}`)
+          .join('\n\n');
+        extractProfile(excerpt).then(extracted => {
+          if (extracted && Object.keys(extracted).length) {
+            const updated = { ...profileRef.current, ...extracted };
+            setProfile(updated);
+            profileRef.current = updated;
+            saveProfile(updated).catch(() => {});
+          }
+        }).catch(() => {});
+      }
     } catch {
       setIsLoading(false);
       setMessages(p => [...p, {
