@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   glow:      { position: 'absolute' },
   center:    { alignItems: 'center', gap: 22 },
   title:     { fontSize: 46, fontWeight: '800', letterSpacing: -1.8, color: '#c4b5fd', marginTop: 6 },
-  subtitle:  { fontSize: 15, color: t.mutedLt, letterSpacing: 0.3 },
+  subtitle:  { fontSize: 15, color: t.mutedLt, letterSpacing: 0.3, textAlign: 'center' },
   progressBg:   { position: 'absolute', bottom: 52, width: 110, height: 2, borderRadius: 2, backgroundColor: 'rgba(124,58,237,0.12)', overflow: 'hidden' },
   progressFill: { height: '100%', borderRadius: 2, backgroundColor: '#7c3aed' },
 });
