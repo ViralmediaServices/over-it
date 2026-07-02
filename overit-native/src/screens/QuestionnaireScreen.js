@@ -217,7 +217,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(30,26,53,0.6)', borderWidth: 1,
     borderColor: 'rgba(124,58,237,0.3)', borderRadius: 12,
     padding: 15, color: t.text, fontSize: 16, marginTop: 4,
-  , includeFontPadding: false},
+    includeFontPadding: false,
+  },
   textarea: { height: 120, paddingTop: 15 },
   cards: { gap: 9 },
   card:  {
