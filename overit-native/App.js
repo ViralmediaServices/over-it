@@ -124,13 +124,19 @@ export default function App() {
     setScreen('chat');
   };
 
+  const handleSignOut = () => {
+    setProfile({});
+    setFirstMsg('');
+    setScreen('auth');
+  };
+
   return (
     <SafeAreaProvider>
       <StatusBar style="light" backgroundColor="transparent" translucent />
       {screen === 'splash'        && <SplashScreen          onDone={handleSplashDone} />}
       {screen === 'auth'          && <AuthScreen            onDone={handleAuthDone} />}
       {screen === 'questionnaire' && <QuestionnaireScreen   userName={profile.userName} onDone={handleQuestDone} />}
-      {screen === 'chat'          && <ChatScreen            initProfile={profile} firstMsg={firstMsg} />}
+      {screen === 'chat'          && <ChatScreen            initProfile={profile} firstMsg={firstMsg} onSignOut={handleSignOut} />}
     </SafeAreaProvider>
   );
 }

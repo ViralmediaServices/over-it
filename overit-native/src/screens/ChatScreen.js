@@ -8,7 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { t } from '../constants/theme';
 import Avatar from '../components/Avatar';
 import { SYSTEM_PROMPT } from '../utils/prompts';
-import { sendChat, saveMessages, getMessages, getProfile, saveProfile, extractProfile, clearMessages } from '../utils/api';
+import { sendChat, saveMessages, getMessages, getProfile, saveProfile, extractProfile, clearMessages, signOut } from '../utils/api';
 
 const Dots = () => {
   const anims = [
@@ -88,7 +88,7 @@ const useWordReveal = (setMessages) => {
   return reveal;
 };
 
-export default function ChatScreen({ initProfile, firstMsg }) {
+export default function ChatScreen({ initProfile, firstMsg, onSignOut }) {
   const insets = useSafeAreaInsets();
   const [messages,    setMessages]    = useState([]);
   const [input,       setInput]       = useState('');
@@ -187,6 +187,24 @@ export default function ChatScreen({ initProfile, firstMsg }) {
       }
     } catch {}
   }, []);
+
+  const handleSignOut = () => {
+    Alert.alert(
+      'Sign out?',
+      'You can sign back in anytime with your email and password.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Sign out',
+          style: 'destructive',
+          onPress: async () => {
+            await signOut();
+            onSignOut?.();
+          },
+        },
+      ]
+    );
+  };
 
   const handleNewChat = () => {
     Alert.alert(
@@ -305,6 +323,9 @@ export default function ChatScreen({ initProfile, firstMsg }) {
                 ) : null)}
               </View>
             )}
+            <TouchableOpacity onPress={handleSignOut} style={styles.signOutBtn}>
+              <Text style={styles.signOutText}>Sign out</Text>
+            </TouchableOpacity>
           </TouchableOpacity>
         </TouchableOpacity>
       )}
@@ -385,6 +406,8 @@ const styles = StyleSheet.create({
   journeyCard:  { backgroundColor: 'rgba(124,58,237,0.06)', borderWidth: 1, borderColor: 'rgba(124,58,237,0.12)', borderRadius: 8, padding: 8, minWidth: 155 },
   journeyCardLabel: { fontSize: 10, color: t.muted, marginBottom: 3 },
   journeyCardVal:   { fontSize: 12, color: '#c4b5fd', fontWeight: '500', lineHeight: 18 },
+  signOutBtn:   { marginTop: 18, paddingVertical: 12, alignItems: 'center', borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.06)' },
+  signOutText:  { color: '#f87171', fontSize: 13, fontWeight: '600' },
   msgList:    { padding: 14, gap: 13, paddingBottom: 8 },
   msgRow:     { flexDirection: 'row', alignItems: 'flex-end', gap: 7, justifyContent: 'flex-start' },
   msgRowUser: { justifyContent: 'flex-end' },
