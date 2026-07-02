@@ -85,3 +85,8 @@ export const savePushToken = async (token) =>
     method: 'POST',
     body:   JSON.stringify({ token }),
   });
+
+// ─── Sign out ───────────────────────────────────────────────────────────
+export const signOut = async () => {
+  await storage.delete('overit_token');
+};

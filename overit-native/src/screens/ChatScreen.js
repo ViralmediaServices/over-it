@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, FlatList,
-  StyleSheet, KeyboardAvoidingView, Platform, Alert, Animated,
+  StyleSheet, KeyboardAvoidingView, Platform, Alert, Animated, Keyboard,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -98,6 +98,7 @@ export default function ChatScreen({ initProfile, firstMsg, onSignOut }) {
 
   const flatRef    = useRef(null);
   const profileRef = useRef(initProfile || {});
+  const inputRef   = useRef('');
   const revealMsg  = useWordReveal(setMessages);
 
   useEffect(() => { profileRef.current = profile; }, [profile]);
@@ -123,17 +124,17 @@ export default function ChatScreen({ initProfile, firstMsg, onSignOut }) {
     })();
   }, []);
 
-  useEffect(() => {
-    if (messages.length > 0) {
-      setTimeout(() => flatRef.current?.scrollToEnd({ animated: true }), 100);
-    }
-  }, [messages.length, isLoading]);
+  // Scroll intentionally handled via FlatList's onContentSizeChange below,
+  // which fires reliably whenever content height actually changes —
+  // including as the AI's word-reveal grows the message taller.
 
-  const send = async () => {
-    if (!input.trim() || isLoading) return;
-    const um   = { role: 'user', content: input.trim(), id: `u${Date.now()}` };
+  const send = async (overrideText) => {
+    const finalInput = (overrideText ?? inputRef.current).trim();
+    if (!finalInput || isLoading) return;
+    const um   = { role: 'user', content: finalInput, id: `u${Date.now()}` };
     const next = [...messages, um];
     setMessages(next);
+    inputRef.current = '';
     setInput('');
     setIsLoading(true);
 
@@ -229,13 +230,9 @@ export default function ChatScreen({ initProfile, firstMsg, onSignOut }) {
       <View style={[styles.msgRow, isUser && styles.msgRowUser]}>
         {!isUser && <Avatar size={24} />}
         {isUser ? (
-          <LinearGradient
-            colors={['#6d28d9', '#9d174d']}
-            start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-            style={[styles.bubble, styles.bubbleUser]}
-          >
+          <View style={[styles.bubble, styles.bubbleUser, { backgroundColor: '#6d28d9' }]}>
             <Text style={styles.bubbleTextUser}>{msg.content}</Text>
-          </LinearGradient>
+          </View>
         ) : (
           <View style={[styles.bubble, styles.bubbleAI]}>
             <Text style={styles.bubbleTextAI}>{msg.content}</Text>
@@ -281,6 +278,7 @@ export default function ChatScreen({ initProfile, firstMsg, onSignOut }) {
         keyExtractor={item => item.id || Math.random().toString()}
         contentContainerStyle={styles.msgList}
         showsVerticalScrollIndicator={false}
+        onContentSizeChange={() => flatRef.current?.scrollToEnd({ animated: true })}
         ListFooterComponent={
           isLoading ? (
             <View style={styles.msgRow}>
@@ -338,17 +336,19 @@ export default function ChatScreen({ initProfile, firstMsg, onSignOut }) {
           <View style={styles.inputRow}>
             <TextInput
               value={input}
-              onChangeText={setInput}
+              onChangeText={(v) => { inputRef.current = v; setInput(v); }}
               placeholder="Tell me how you are feeling..."
               placeholderTextColor="#332f4d"
               multiline
               editable={!isLoading}
               style={styles.input}
-              onSubmitEditing={send}
+              onSubmitEditing={(e) => send(e.nativeEvent.text)}
               blurOnSubmit={false}
+              keyboardType={Platform.OS === 'android' ? 'visible-password' : 'default'}
+              autoCorrect={false}
             />
             <TouchableOpacity
-              onPress={send}
+              onPress={() => send()}
               disabled={!input.trim() || isLoading}
               style={styles.sendWrap}
             >
@@ -386,10 +386,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(11,9,20,0.78)',
   },
   headerName:      { fontWeight: '700', fontSize: 14, letterSpacing: -0.2, color: t.text , includeFontPadding: false},
-  headerSub:       { fontSize: 10, color: t.muted, textTransform: 'uppercase', letterSpacing: 0.8, marginTop: 1 , includeFontPadding: false},
+  headerSub:       { fontSize: 10, color: t.muted, textTransform: 'uppercase', letterSpacing: 0.8, marginTop: 1 , includeFontPadding: false, fontWeight: '400'},
   headerBtn:       { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)' },
   headerBtnActive: { borderColor: 'rgba(124,58,237,0.45)', backgroundColor: 'rgba(124,58,237,0.13)' },
-  headerBtnText:   { color: t.mutedLt, fontSize: 12 , includeFontPadding: false},
+  headerBtnText:   { color: t.mutedLt, fontSize: 12 , includeFontPadding: false, fontWeight: '400'},
   journey: {
     backgroundColor: 'rgba(15,11,28,0.97)',
     borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)',
@@ -399,23 +399,23 @@ const styles = StyleSheet.create({
   journeyOverlay: { position: 'absolute', top: 60, left: 12, right: 12, backgroundColor: '#0f0b1c', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(124,58,237,0.25)', padding: 16, maxHeight: '80%' },
   journeyOverlayHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   journeyClose: { padding: 4 },
-  journeyCloseText: { color: t.muted, fontSize: 16 , includeFontPadding: false},
+  journeyCloseText: { color: t.muted, fontSize: 16 , includeFontPadding: false, fontWeight: '400'},
   journeyTitle: { fontSize: 11, fontWeight: '600', color: '#c4b5fd', letterSpacing: 0.8, textTransform: 'uppercase' , includeFontPadding: false},
-  journeyEmpty: { fontSize: 12.5, color: t.muted, lineHeight: 20, fontStyle: 'italic' , includeFontPadding: false},
+  journeyEmpty: { fontSize: 12.5, color: t.muted, lineHeight: 20, fontStyle: 'italic' , includeFontPadding: false, fontWeight: '400'},
   journeyGrid:  { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   journeyCard:  { backgroundColor: 'rgba(124,58,237,0.06)', borderWidth: 1, borderColor: 'rgba(124,58,237,0.12)', borderRadius: 8, padding: 8, minWidth: 155 },
-  journeyCardLabel: { fontSize: 10, color: t.muted, marginBottom: 3 , includeFontPadding: false},
+  journeyCardLabel: { fontSize: 10, color: t.muted, marginBottom: 3 , includeFontPadding: false, fontWeight: '400'},
   journeyCardVal:   { fontSize: 12, color: '#c4b5fd', fontWeight: '500', lineHeight: 18 , includeFontPadding: false},
   signOutBtn:   { marginTop: 18, paddingVertical: 12, alignItems: 'center', borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.06)' },
   signOutText:  { color: '#f87171', fontSize: 13, fontWeight: '600' , includeFontPadding: false},
   msgList:    { padding: 14, gap: 13, paddingBottom: 8 },
   msgRow:     { flexDirection: 'row', alignItems: 'flex-end', gap: 7, justifyContent: 'flex-start' },
   msgRowUser: { justifyContent: 'flex-end' },
-  bubble:         { maxWidth: '78%', paddingHorizontal: 15, paddingVertical: 11, borderRadius: 18 },
+  bubble:         { maxWidth: '78%', paddingLeft: 15, paddingRight: 19, paddingVertical: 11, borderRadius: 18, alignSelf: 'flex-start', flexShrink: 1 },
   bubbleUser:     { borderBottomRightRadius: 5 },
   bubbleAI:       { backgroundColor: 'rgba(22,18,42,0.9)', borderWidth: 1, borderColor: 'rgba(124,58,237,0.11)', borderTopLeftRadius: 4 },
-  bubbleTextUser: { color: '#f0ecff', fontSize: 13.5, lineHeight: 23 , includeFontPadding: false},
-  bubbleTextAI:   { color: t.textDim,  fontSize: 13.5, lineHeight: 23 , includeFontPadding: false},
+  bubbleTextUser: { color: '#f0ecff', fontSize: 13.5, fontWeight: '400' },
+  bubbleTextAI:   { color: t.textDim,  fontSize: 13.5, lineHeight: 23 , includeFontPadding: false, fontWeight: '400'},
   inputArea: {
     paddingHorizontal: 14, paddingTop: 10,
     borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.04)',
@@ -427,9 +427,9 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(124,58,237,0.19)',
     borderRadius: 22, paddingLeft: 15, paddingRight: 8, paddingVertical: 8,
   },
-  input:     { flex: 1, color: t.text, fontSize: 13.5, lineHeight: 21, maxHeight: 132, paddingVertical: 4 , includeFontPadding: false},
+  input:     { flex: 1, color: t.text, fontSize: 13.5, lineHeight: 21, maxHeight: 132, paddingVertical: 4 , includeFontPadding: false, fontWeight: '400'},
   sendWrap:  { width: 34, height: 34, borderRadius: 17, overflow: 'hidden', flexShrink: 0 },
   sendBtn:   { flex: 1, alignItems: 'center', justifyContent: 'center' },
   sendArrow: { fontSize: 17, fontWeight: '700' , includeFontPadding: false},
-  legal: { textAlign: 'center', fontSize: 10.5, color: '#2d2a42', marginTop: 8 , includeFontPadding: false},
+  legal: { textAlign: 'center', fontSize: 10.5, color: '#2d2a42', marginTop: 8 , includeFontPadding: false, fontWeight: '400'},
 });
