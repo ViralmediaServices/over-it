@@ -99,6 +99,7 @@ export default function ChatScreen({ initProfile, firstMsg, onSignOut }) {
   const flatRef    = useRef(null);
   const profileRef = useRef(initProfile || {});
   const inputRef   = useRef('');
+  const isNearBottomRef = useRef(true);
   const revealMsg  = useWordReveal(setMessages);
 
   useEffect(() => { profileRef.current = profile; }, [profile]);
@@ -134,6 +135,7 @@ export default function ChatScreen({ initProfile, firstMsg, onSignOut }) {
     const um   = { role: 'user', content: finalInput, id: `u${Date.now()}` };
     const next = [...messages, um];
     setMessages(next);
+    isNearBottomRef.current = true;
     inputRef.current = '';
     setInput('');
     setIsLoading(true);
@@ -278,7 +280,17 @@ export default function ChatScreen({ initProfile, firstMsg, onSignOut }) {
         keyExtractor={item => item.id || Math.random().toString()}
         contentContainerStyle={styles.msgList}
         showsVerticalScrollIndicator={false}
-        onContentSizeChange={() => flatRef.current?.scrollToEnd({ animated: true })}
+        onScroll={(e) => {
+          const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
+          const distanceFromBottom = contentSize.height - contentOffset.y - layoutMeasurement.height;
+          isNearBottomRef.current = distanceFromBottom < 120;
+        }}
+        scrollEventThrottle={100}
+        onContentSizeChange={() => {
+          if (isNearBottomRef.current) {
+            flatRef.current?.scrollToEnd({ animated: true });
+          }
+        }}
         ListFooterComponent={
           isLoading ? (
             <View style={styles.msgRow}>
@@ -344,8 +356,7 @@ export default function ChatScreen({ initProfile, firstMsg, onSignOut }) {
               style={styles.input}
               onSubmitEditing={(e) => send(e.nativeEvent.text)}
               blurOnSubmit={false}
-              keyboardType={Platform.OS === 'android' ? 'visible-password' : 'default'}
-              autoCorrect={false}
+              autoCorrect={true}
             />
             <TouchableOpacity
               onPress={() => send()}
