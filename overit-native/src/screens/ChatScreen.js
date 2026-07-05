@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, FlatList,
+  View, Text, TextInput, TouchableOpacity, FlatList, ScrollView,
   StyleSheet, KeyboardAvoidingView, Platform, Alert, Animated, Keyboard,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -95,14 +95,26 @@ export default function ChatScreen({ initProfile, firstMsg, onSignOut }) {
   const [isLoading,   setIsLoading]   = useState(false);
   const [profile,     setProfile]     = useState(initProfile || {});
   const [showJourney, setShowJourney] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   const flatRef    = useRef(null);
   const profileRef = useRef(initProfile || {});
   const inputRef   = useRef('');
   const isNearBottomRef = useRef(true);
+  const mountTimeRef = useRef(Date.now());
   const revealMsg  = useWordReveal(setMessages);
 
   useEffect(() => { profileRef.current = profile; }, [profile]);
+
+  useEffect(() => {
+    const showEvt = Platform.OS === 'android' ? 'keyboardDidShow' : 'keyboardWillShow';
+    const hideEvt = Platform.OS === 'android' ? 'keyboardDidHide' : 'keyboardWillHide';
+    const showSub = Keyboard.addListener(showEvt, (e) => {
+      setKeyboardHeight(e.endCoordinates?.height || 0);
+    });
+    const hideSub = Keyboard.addListener(hideEvt, () => setKeyboardHeight(0));
+    return () => { showSub.remove(); hideSub.remove(); };
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -118,6 +130,15 @@ export default function ChatScreen({ initProfile, firstMsg, onSignOut }) {
         }
         if (msgRes.status === 'fulfilled' && msgRes.value?.messages?.length) {
           setMessages(msgRes.value.messages);
+          // Explicitly force to the last message after loading history —
+          // more reliable than depending solely on onContentSizeChange
+          // for a large list rendering for the first time.
+          // Keep correcting scroll position repeatedly during the settling
+          // window, since a long list can report several partial content
+          // size changes before it's fully laid out.
+          [200, 400, 700, 1000, 1400].forEach(delay => {
+            setTimeout(() => flatRef.current?.scrollToEnd({ animated: false }), delay);
+          });
           return;
         }
       } catch {}
@@ -277,18 +298,19 @@ export default function ChatScreen({ initProfile, firstMsg, onSignOut }) {
         ref={flatRef}
         data={messages}
         renderItem={renderMessage}
-        keyExtractor={item => item.id || Math.random().toString()}
+        keyExtractor={(item, index) => item.id ? String(item.id) : `msg-${index}`}
         contentContainerStyle={styles.msgList}
         showsVerticalScrollIndicator={false}
         onScroll={(e) => {
           const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
           const distanceFromBottom = contentSize.height - contentOffset.y - layoutMeasurement.height;
-          isNearBottomRef.current = distanceFromBottom < 120;
+          isNearBottomRef.current = distanceFromBottom < 40;
         }}
         scrollEventThrottle={100}
         onContentSizeChange={() => {
-          if (isNearBottomRef.current) {
-            flatRef.current?.scrollToEnd({ animated: true });
+          const withinSettlingWindow = Date.now() - mountTimeRef.current < 1500;
+          if (withinSettlingWindow || isNearBottomRef.current) {
+            flatRef.current?.scrollToEnd({ animated: !withinSettlingWindow });
           }
         }}
         ListFooterComponent={
@@ -303,48 +325,64 @@ export default function ChatScreen({ initProfile, firstMsg, onSignOut }) {
         }
       />
 
-      {/* Journey overlay */}
+      {/* Journey overlay — background and panel are SIBLINGS, not nested,
+          so taps/scrolls inside the panel never reach the background's
+          close handler at all. */}
       {showJourney && (
-        <TouchableOpacity
-          style={styles.journeyOverlayBg}
-          activeOpacity={1}
-          onPress={() => setShowJourney(false)}
-        >
-          <TouchableOpacity activeOpacity={1} style={styles.journeyOverlay}>
+        <>
+          <TouchableOpacity
+            style={styles.journeyOverlayBg}
+            activeOpacity={1}
+            onPress={() => setShowJourney(false)}
+          />
+          <View style={styles.journeyOverlay} pointerEvents="box-none">
             <View style={styles.journeyOverlayHeader}>
               <Text style={styles.journeyTitle}>🌱 Your Journey</Text>
               <TouchableOpacity onPress={() => setShowJourney(false)} style={styles.journeyClose}>
                 <Text style={styles.journeyCloseText}>✕</Text>
               </TouchableOpacity>
             </View>
-            {!hasProfile ? (
-              <Text style={styles.journeyEmpty}>
-                As we talk, I will quietly build a picture of where you are so I can support you better over time.
-              </Text>
-            ) : (
-              <View style={styles.journeyGrid}>
-                {JOURNEY_ROWS.map(([icon, label, key]) => profile[key] ? (
-                  <View key={key} style={styles.journeyCard}>
-                    <Text style={styles.journeyCardLabel}>{icon} {label}</Text>
-                    <Text style={styles.journeyCardVal}>
-                      {Array.isArray(profile[key]) ? profile[key].join(' · ') : profile[key]}
-                    </Text>
-                  </View>
-                ) : null)}
-              </View>
-            )}
-            <TouchableOpacity onPress={handleSignOut} style={styles.signOutBtn}>
-              <Text style={styles.signOutText}>Sign out</Text>
-            </TouchableOpacity>
-          </TouchableOpacity>
-        </TouchableOpacity>
+            <ScrollView
+              style={styles.journeyScroll}
+              showsVerticalScrollIndicator={true}
+              contentContainerStyle={{ paddingBottom: 8 }}
+              nestedScrollEnabled={true}
+            >
+              {!hasProfile ? (
+                <Text style={styles.journeyEmpty}>
+                  As we talk, I will quietly build a picture of where you are so I can support you better over time.
+                </Text>
+              ) : (
+                <View style={styles.journeyGrid}>
+                  {JOURNEY_ROWS.map(([icon, label, key]) => profile[key] ? (
+                    <View key={key} style={styles.journeyCard}>
+                      <Text style={styles.journeyCardLabel}>{icon} {label}</Text>
+                      <Text style={styles.journeyCardVal}>
+                        {Array.isArray(profile[key]) ? profile[key].join(' · ') : profile[key]}
+                      </Text>
+                    </View>
+                  ) : null)}
+                </View>
+              )}
+              <TouchableOpacity onPress={handleSignOut} style={styles.signOutBtn}>
+                <Text style={styles.signOutText}>Sign out</Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </>
       )}
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={0}
       >
-        <View style={[styles.inputArea, { paddingBottom: Math.max(insets.bottom, 14) }]}>
+        <View style={[
+          styles.inputArea,
+          {
+            paddingBottom: Math.max(insets.bottom, 14) + 10,
+            marginBottom: Platform.OS === 'android' ? keyboardHeight : 0,
+          },
+        ]}>
           <View style={styles.inputRow}>
             <TextInput
               value={input}
@@ -407,7 +445,8 @@ const styles = StyleSheet.create({
     padding: 14, maxHeight: '36%',
   },
   journeyOverlayBg: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#0b0914', zIndex: 50 },
-  journeyOverlay: { position: 'absolute', top: 60, left: 12, right: 12, backgroundColor: '#0f0b1c', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(124,58,237,0.25)', padding: 16, maxHeight: '80%' },
+  journeyOverlay: { position: 'absolute', top: 60, left: 12, right: 12, bottom: 100, backgroundColor: '#0f0b1c', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(124,58,237,0.25)', padding: 16, zIndex: 60, elevation: 60 },
+  journeyScroll: { flex: 1 },
   journeyOverlayHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   journeyClose: { padding: 4 },
   journeyCloseText: { color: t.muted, fontSize: 16 , includeFontPadding: false, fontWeight: '400'},
