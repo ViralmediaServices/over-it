@@ -6,6 +6,38 @@ const ANTHROPIC      = 'https://api.anthropic.com/v1/messages';
 const MODEL          = 'claude-sonnet-4-6';
 const MAX_TOKENS     = 1000;
 const MAX_TOOL_LOOPS = 6;
+const MAX_RETRIES     = 3;
+
+async function callAnthropic(body) {
+  let lastError;
+
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    const response = await fetch(ANTHROPIC, {
+      method:  'POST',
+      headers: {
+        'Content-Type':      'application/json',
+        'x-api-key':         process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-beta':    'web-search-2025-03-05',
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await response.json();
+
+    if (data.error?.type === 'overloaded_error' && attempt < MAX_RETRIES - 1) {
+      lastError = data.error;
+      await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt)));
+      continue;
+    }
+
+    if (data.error) throw new Error(data.error.message);
+
+    return data;
+  }
+
+  throw new Error(lastError?.message || 'Anthropic overloaded after retries');
+}
 
 async function verifyJWT(authHeader) {
   if (!authHeader?.startsWith('Bearer ')) throw new Error('No token');
@@ -47,28 +79,16 @@ export default async function handler(req) {
     let text = '';
 
     for (let i = 0; i < MAX_TOOL_LOOPS; i++) {
-      const response = await fetch(ANTHROPIC, {
-        method:  'POST',
-        headers: {
-          'Content-Type':      'application/json',
-          'x-api-key':         process.env.ANTHROPIC_API_KEY,
-          'anthropic-version': '2023-06-01',
-          'anthropic-beta':    'web-search-2025-03-05',
-        },
-        body: JSON.stringify({
-          model:      MODEL,
-          max_tokens: MAX_TOKENS,
-          system: [
-            { type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } },
-            { type: 'text', text: profilePrompt || '' },
-          ],
-          tools:      [{ type: 'web_search_20250305', name: 'web_search' }],
-          messages:   cur,
-        }),
+      const data = await callAnthropic({
+        model:      MODEL,
+        max_tokens: MAX_TOKENS,
+        system: [
+          { type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } },
+          { type: 'text', text: profilePrompt || '' },
+        ],
+        tools:      [{ type: 'web_search_20250305', name: 'web_search' }],
+        messages:   cur,
       });
-
-      const data = await response.json();
-      if (data.error) throw new Error(data.error.message);
 
       text += (data.content || [])
         .filter(b => b.type === 'text')
