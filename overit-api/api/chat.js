@@ -37,7 +37,7 @@ export default async function handler(req) {
     return new Response(JSON.stringify({ error: 'Unauthorized', detail: err.message }), { status: 401 });
   }
 
-  const { messages, systemPrompt } = await req.json();
+  const { messages, systemPrompt, profilePrompt } = await req.json();
   if (!messages || !systemPrompt) {
     return new Response(JSON.stringify({ error: 'messages and systemPrompt required' }), { status: 400 });
   }
@@ -58,7 +58,10 @@ export default async function handler(req) {
         body: JSON.stringify({
           model:      MODEL,
           max_tokens: MAX_TOKENS,
-          system:     systemPrompt,
+          system: [
+            { type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } },
+            { type: 'text', text: profilePrompt || '' },
+          ],
           tools:      [{ type: 'web_search_20250305', name: 'web_search' }],
           messages:   cur,
         }),
