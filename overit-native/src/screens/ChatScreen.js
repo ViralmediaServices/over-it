@@ -7,7 +7,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { LinearGradient } from 'expo-linear-gradient';
 import { t } from '../constants/theme';
 import Avatar from '../components/Avatar';
-import { SYSTEM_PROMPT } from '../utils/prompts';
+import { SYSTEM_PROMPT, buildProfilePrompt } from '../utils/prompts';
 import { sendChat, saveMessages, getMessages, getProfile, saveProfile, extractProfile, clearMessages, signOut } from '../utils/api';
 
 const Dots = () => {
@@ -162,8 +162,8 @@ export default function ChatScreen({ initProfile, firstMsg, onSignOut }) {
     setIsLoading(true);
 
     try {
-      const systemPrompt = SYSTEM_PROMPT.replace('{PROFILE}', profileCtx(profileRef.current));
-      const text = await sendChat(next, systemPrompt);
+      const profilePrompt = buildProfilePrompt(profileCtx(profileRef.current));
+      const text = await sendChat(next, SYSTEM_PROMPT, profilePrompt);
       const am    = { role: 'assistant', content: '', id: `a${Date.now()}` };
       const final = [...next, am];
       setMessages(final);

@@ -64,10 +64,10 @@ export const saveMessages = async (messages) =>
 export const clearMessages = async () =>
   apiFetch('/api/messages', { method: 'DELETE' });
 
-export const sendChat = async (messages, systemPrompt) => {
+export const sendChat = async (messages, systemPrompt, profilePrompt) => {
   const data = await apiFetch('/api/chat', {
     method: 'POST',
-    body:   JSON.stringify({ messages, systemPrompt }),
+    body:   JSON.stringify({ messages, systemPrompt, profilePrompt }),
   });
   return data.text;
 };
