@@ -7,7 +7,7 @@ export const buildWelcome = (a) => {
   const fresh    = ['This week', 'This month'].includes(a.timeSinceBreakup);
   const shared   = (a.initialShare || '').trim();
 
-  let msg = `Hey ${name}. I'm really glad you're here.\n\n`;
+ let msg = `Hey ${name}. I'm really glad you're here. Just so you know — I'm an AI companion, not a human or a licensed therapist. But I'm going to listen closely to everything you share.\n\n`;
 
   if (byThem)
     msg += `Not having a say in it — having someone else make that choice for you — is one of the hardest things. It takes away something bigger than just the relationship.\n\n`;
