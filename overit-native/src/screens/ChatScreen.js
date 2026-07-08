@@ -254,11 +254,11 @@ export default function ChatScreen({ initProfile, firstMsg, onSignOut }) {
         {!isUser && <Avatar size={24} />}
         {isUser ? (
           <View style={[styles.bubble, styles.bubbleUser, { backgroundColor: '#6d28d9' }]}>
-            <Text style={styles.bubbleTextUser}>{msg.content}</Text>
+            <Text style={styles.bubbleTextUser} selectable>{msg.content}</Text>
           </View>
         ) : (
           <View style={[styles.bubble, styles.bubbleAI]}>
-            <Text style={styles.bubbleTextAI}>{msg.content}</Text>
+            <Text style={styles.bubbleTextAI} selectable>{msg.content}</Text>
           </View>
         )}
       </View>
