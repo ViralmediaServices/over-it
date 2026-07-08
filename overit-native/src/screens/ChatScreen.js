@@ -142,7 +142,7 @@ export default function ChatScreen({ initProfile, firstMsg, onSignOut }) {
           return;
         }
       } catch {}
-      setMessages([{ role: 'assistant', content: firstMsg || "Hey. I'm here. 💙", id: 'welcome' }]);
+      setMessages([{ role: 'assistant', content: firstMsg || "Hey. I'm Over It — an AI companion, not a human or licensed therapist. I'm here to listen. 💙", id: 'welcome' }]);
     })();
   }, []);
 
@@ -240,7 +240,7 @@ export default function ChatScreen({ initProfile, firstMsg, onSignOut }) {
           text: 'New chat',
           onPress: async () => {
             await clearMessages().catch(() => {});
-            setMessages([{ role: 'assistant', content: "Hey. Glad you're back. 💙", id: 'welcome2' }]);
+            setMessages([{ role: 'assistant', content: "Hey. Glad you're back — quick reminder that I'm an AI, not a human counselor. 💙", id: 'welcome2' }]);
           },
         },
       ]
@@ -417,7 +417,7 @@ export default function ChatScreen({ initProfile, firstMsg, onSignOut }) {
             </TouchableOpacity>
           </View>
           <Text style={styles.legal}>
-            You're chatting with an AI, not a human. Not a substitute for professional mental health care.{' '}
+            You're chatting with an AI, not a licensed therapist. Not a substitute for professional care.{' '}
             <Text style={{ color: '#5a3f82' }}>In crisis? Call or text 988.</Text>
           </Text>
         </View>
