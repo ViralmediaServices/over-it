@@ -90,3 +90,9 @@ export const savePushToken = async (token) =>
 export const signOut = async () => {
   await storage.delete('overit_token');
 };
+
+export const deleteAccount = async () => {
+  const data = await apiFetch('/api/account', { method: 'DELETE' });
+  await storage.delete('overit_token');
+  return data;
+};

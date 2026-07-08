@@ -8,7 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { t } from '../constants/theme';
 import Avatar from '../components/Avatar';
 import { SYSTEM_PROMPT, buildProfilePrompt } from '../utils/prompts';
-import { sendChat, saveMessages, getMessages, getProfile, saveProfile, extractProfile, clearMessages, signOut } from '../utils/api';
+import { sendChat, saveMessages, getMessages, getProfile, saveProfile, extractProfile, clearMessages, signOut, deleteAccount } from '../utils/api';
 
 const Dots = () => {
   const anims = [
@@ -230,6 +230,26 @@ export default function ChatScreen({ initProfile, firstMsg, onSignOut }) {
     );
   };
 
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete your account?',
+      'This will permanently delete your account, profile, and entire conversation history. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete account',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteAccount();
+            } catch {}
+            onSignOut?.();
+          },
+        },
+      ]
+    );
+  };
+
   const handleNewChat = () => {
     Alert.alert(
       'Start new conversation?',
@@ -367,6 +387,9 @@ export default function ChatScreen({ initProfile, firstMsg, onSignOut }) {
               <TouchableOpacity onPress={handleSignOut} style={styles.signOutBtn}>
                 <Text style={styles.signOutText}>Sign out</Text>
               </TouchableOpacity>
+              <TouchableOpacity onPress={handleDeleteAccount} style={styles.deleteAccountBtn}>
+                <Text style={styles.deleteAccountText}>Delete account</Text>
+              </TouchableOpacity>
             </ScrollView>
           </View>
         </>
@@ -458,6 +481,8 @@ const styles = StyleSheet.create({
   journeyCardVal:   { fontSize: 12, color: '#c4b5fd', fontWeight: '500', lineHeight: 18 , includeFontPadding: false},
   signOutBtn:   { marginTop: 18, paddingVertical: 12, alignItems: 'center', borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.06)' },
   signOutText:  { color: '#f87171', fontSize: 13, fontWeight: '600' , includeFontPadding: false},
+  deleteAccountBtn:  { marginTop: 10, paddingVertical: 12, alignItems: 'center', borderRadius: 10, backgroundColor: 'rgba(248,113,113,0.1)', borderWidth: 1, borderColor: 'rgba(248,113,113,0.3)' },
+  deleteAccountText: { color: '#f87171', fontSize: 13, fontWeight: '700', includeFontPadding: false },
   msgList:    { padding: 14, gap: 13, paddingBottom: 8 },
   msgRow:     { flexDirection: 'row', alignItems: 'flex-end', gap: 7, justifyContent: 'flex-start' },
   msgRowUser: { justifyContent: 'flex-end' },
