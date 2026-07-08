@@ -97,17 +97,6 @@ export default function AuthScreen({ onDone }) {
             <Text style={styles.h1}>{mode === 'signup' ? 'Begin your healing' : 'Welcome back'}</Text>
             <Text style={styles.sub}>{mode === 'signup' ? 'A private, judgment-free space to heal.' : 'Continue where you left off.'}</Text>
           </View>
-          <TouchableOpacity style={styles.ghostBtn}>
-            <Text style={styles.ghostBtnText}>🍎  Continue with Apple</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.ghostBtn, { marginTop: 8 }]}>
-            <Text style={[styles.ghostBtnText, { fontWeight: '700' }]}>G  Continue with Google</Text>
-          </TouchableOpacity>
-          <View style={styles.divider}>
-            <View style={styles.dividerLine}/>
-            <Text style={styles.dividerText}>or</Text>
-            <View style={styles.dividerLine}/>
-          </View>
           {mode === 'signup' && <Field label="First Name" onChangeText={handleName} placeholder="Your name" onSubmit={submit}/>}
           <Field label="Email" onChangeText={handleEmail} placeholder="you@email.com" keyboardType="email-address" onSubmit={submit}/>
           <Field label="Password" onChangeText={handlePassword} placeholder="8+ characters" secureTextEntry onSubmit={submit}/>
